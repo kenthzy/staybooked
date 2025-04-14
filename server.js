@@ -249,25 +249,28 @@ app.post('/chat', async (req, res) => {
         }).join('\n');
 
         const prompt = `
-                        Act as an Airbnb expert assistant. Format your responses using markdown:
-                        - **Bold** for key terms/prices
-                        - Bullet points for lists
-                        - ## Headers for sections
-                        - *Italic* for special notes*
+            Act as an Airbnb expert assistant. Format your responses using markdown:
+            - **Bold** for key terms/prices
+            - Bullet points for lists
+            - ## Headers for sections
+            - *Italic* for special notes*
 
-                        The user provided the following onboarding answers:
-                        ${answeredQuestions}
+            The user provided the following onboarding answers:
+            ${answeredQuestions}
 
-                        Recent user message:
-                        "${lastMessage}"
+            Make sure to align your pricing recommendations with the user's stated budget: **"${answers.budget || 'Not provided'}"**. Offer specific pricing suggestions and relevant strategies that match this budget range.
 
-                        Please provide strategic guidance focused on:
-                        - Market-specific pricing
-                        - Audience engagement
-                        - Platform optimization
-                        - Local regulations
-                        - Feature recommendations
-                        `;
+            Recent user message:
+            "${lastMessage}"
+
+            Please provide strategic guidance focused on:
+            - Market-specific pricing
+            - Audience engagement
+            - Platform optimization
+            - Local regulations
+            - Feature recommendations
+            `;
+
 
         const completion = await openai.chat.completions.create({
             model: "google/gemini-pro",
