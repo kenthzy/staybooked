@@ -243,31 +243,24 @@ const onboardingQuestions = [
 app.post('/chat', async (req, res) => {
     try {
         const { answers, lastMessage } = req.body;
-        const answeredQuestions = onboardingQuestions.map(q => {
-            const answer = answers[q.key] || 'Not answered';
-            return `- **${q.question}** ${answer}`;
-        }).join('\n');
-
-        const prompt = `
-                        Act as an Airbnb expert assistant. Format your responses using markdown:
-                        - **Bold** for key terms/prices
-                        - Bullet points for lists
-                        - ## Headers for sections
-                        - *Italic* for special notes*
-
-                        The user provided the following onboarding answers:
-                        ${answeredQuestions}
-
-                        Recent user message:
-                        "${lastMessage}"
-
-                        Please provide strategic guidance focused on:
-                        - Market-specific pricing
-                        - Audience engagement
-                        - Platform optimization
-                        - Local regulations
-                        - Feature recommendations
-                        `;
+        
+        const prompt = `Act as an Airbnb expert assistant. Format responses using markdown with:
+        - **Bold** for key terms/prices
+        - Bullet points for lists
+        - ## Headers for sections
+        - *Italic* for special notes
+        
+        The user provided these answers:
+        ${JSON.stringify(answers)}
+        
+        Current conversation: ${lastMessage}
+        
+        Provide advice focusing on:
+        - Market-specific pricing
+        - Audience engagement
+        - Platform optimization
+        - Local regulations
+        - Feature recommendations`;
 
         const completion = await openai.chat.completions.create({
             model: "google/gemini-pro",
@@ -278,15 +271,15 @@ app.post('/chat', async (req, res) => {
         });
 
         const rawContent = completion.choices[0].message.content;
-
+        
         res.json({
-            text: rawContent,
-            formatted: marked.parse(rawContent)
+            text: rawContent, 
+            formatted: marked.parse(rawContent) 
         });
-
+        
     } catch (error) {
         console.error('Chat Error:', error);
-        res.status(500).json({
+        res.status(500).json({ 
             text: "Sorry, I'm having trouble processing that. Could you try rephrasing?",
             formatted: marked.parse("**Oops!** Please try your question again or rephrase it.")
         });
