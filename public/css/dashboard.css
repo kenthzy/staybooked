@@ -1,0 +1,73 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap');
+
+* {
+    font-family: 'Nunito', Arial, sans-serif;
+}
+body {
+    background-color: #2f3a1e;
+}
+.navbar {
+    background-color: #f7f4ef!important;
+}
+.Welcome{
+    color: #2f3a1e;
+    font-weight: bold;
+}
+.news-card {
+    height: 100%;
+    transition: transform 0.2s;
+    background-color: #f7f4ef;
+}
+.news-card:hover {
+    transform: translateY(-5px);
+}
+.card-img-top {
+    height: 200px;
+    object-fit: cover;
+}
+.text-clamp {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.card-img-top {
+    height: 200px; /* Image height */
+}
+
+.text-clamp {
+    -webkit-line-clamp: 3; /* Number of lines to show */
+}
+.btn-news {
+    background-color: #2f3a1e;
+    color: #f7f4ef;
+    border: none;
+}
+.btn-news:hover {
+    background-color: #3e4b2b;
+}
+.news-card img {
+    height: 200px;
+    object-fit: cover;
+    width: 100%;
+    border-radius: 8px 8px 0 0;
+}
+
+@supports (aspect-ratio: 16/9) {
+    .news-card img {
+        height: auto;
+        aspect-ratio: 16/9;
+    }
+}
+.btn {
+    background-color: #3e4b2b;
+    color: white;
+    border: 2px solid #2f3a1e;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    background-color: #A8BBA0;
+    color: #ffffff;
+    border-color: #2f3a1e;
+}

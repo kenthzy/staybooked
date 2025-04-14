@@ -1,0 +1,60 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap');
+
+* {
+    font-family: 'Nunito', Arial, sans-serif;
+}
+body {
+    background-color: #f7f4ef;
+    color: #2f3a1e;
+    font-family: Arial, sans-serif;
+}
+.main-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+.info-section h1 {
+    font-size: 3rem;
+    font-weight: bold;
+}
+.info-section p {
+    margin-top: 1rem;
+    font-size: 0.95rem;
+    max-width: 450px;
+}
+.form-section {
+    border: 1px solid #2f3a1e;
+    padding: 2rem;
+    max-width: 350px;
+    width: 100%;
+}
+.form-section h2 {
+    font-size: 1.5rem;
+    text-align: center;
+    margin-bottom: 1.5rem;
+    font-weight: bold;
+}
+.form-control {
+    border-radius: 0;
+    border: 1px solid #2f3a1e;
+}
+.btn-signup {
+    background-color: #2f3a1e;
+    color: white;
+    border: none;
+    width: 100%;
+    padding: 0.75rem;
+    margin-top: 1rem;
+}
+.login-link {
+    text-align: center;
+    display: block;
+    margin-top: 1rem;
+    color: #2f3a1e;
+    text-decoration: none;
+}
+.login-link:hover {
+    text-decoration: underline;
+}
