@@ -9,6 +9,14 @@ body {
 .navbar {
     background-color: #f7f4ef!important;
 }
+.masthead {
+    height: 100vh;
+    min-height: 500px;
+    background-image: url('https://news.airbnb.com/wp-content/uploads/sites/4/2022/03/564032_GettyImages-822330958-foryou.jpg?w=1440');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
 .Welcome{
     color: #2f3a1e;
     font-weight: bold;
