@@ -12,13 +12,21 @@ body {
 .masthead {
     height: 100vh;
     min-height: 500px;
-    background-image: url('https://news.airbnb.com/wp-content/uploads/sites/4/2022/11/10_Elegant-Secluded-Cabin.jpg?w=2048');
+    background-image: url('https://news.airbnb.com/wp-content/uploads/sites/4/2021/08/1.-As-the-work-from-anywhere-trend-continues-being-able-to-determine-a-listings-WiFi-speed-before-booking-is-a-key-feature-for-digital-nomads-1.jpg?w=2048');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    border-radius: 8px;
+    border-radius: 8px;   
   }
-  
+.masthead h1 {
+    color: #f7f4ef;
+    text-shadow: 3px 0 0 #747C64, -2px 0 0 #747C64, 0 3px 0 #747C64, 0 -2px 0 #747C64;
+}
+.glow-image {
+    background-color: #a8bba0b9;
+    border-radius: 50%;
+    box-shadow: 0 0 15px 5px #A8BBA0;
+}
 .Welcome{
     color: #2f3a1e;
     font-weight: bold;
