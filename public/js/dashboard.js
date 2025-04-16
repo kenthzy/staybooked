@@ -46,10 +46,16 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 });
 
-const updateUsername = () => {
-    const usernameElement = document.getElementById('username');
-    if (usernameElement) {
-        const urlParams = new URLSearchParams(window.location.search);
-        usernameElement.textContent = urlParams.get('user') || 'Guest';
-    }
-};
+
+document.addEventListener('DOMContentLoaded', () => {
+    fetch('/api/user')
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('username').textContent = data.username;
+        })
+        .catch(err => {
+            console.error('Error getting username:', err);
+            document.getElementById('username').textContent = 'Guest';
+        });
+});
+

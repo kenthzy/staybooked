@@ -158,21 +158,33 @@ app.post('/signup', async (req, res) => {
     }
 });
 
+
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
+
     try {
         const users = await getUsers();
         const user = users[username];
-        
-        if (user && await bcrypt.compare(password, user.password)) {
-            req.session.user = username;
-            return res.redirect('/dashboard');
+
+        if (!user) {
+            return res.status(401).send('Invalid username or password');
         }
-        res.send('Invalid username or password');
+
+        const passwordMatch = await bcrypt.compare(password, user.password);
+
+        if (!passwordMatch) {
+            return res.status(401).send('Invalid username or password');
+        }
+
+        req.session.user = username;
+
+        res.redirect('/dashboard');
     } catch (error) {
-        res.status(500).send('Login error');
+        console.error('Login error:', error);
+        res.status(500).send('Internal server error');
     }
 });
+
 
 app.get('/logout', (req, res) => {
     req.session.destroy();
@@ -301,6 +313,17 @@ async function getUsers() {
 async function saveUsers(users) {
     await fs.writeFile(USERS_FILE, JSON.stringify(users, null, 2));
 }
+
+app.get('/api/user', async (req, res) => {
+    const username = req.session.user;
+
+    if (!username) {
+        return res.status(401).json({ error: 'Not logged in' });
+    }
+
+    res.json({ username });
+});
+
 
 // Server Initialization
 app.listen(PORT, () => {
