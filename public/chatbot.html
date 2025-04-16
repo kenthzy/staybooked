@@ -15,10 +15,15 @@
             <span class="navbar-brand mb-0 h1">
                 <img src="assets/logo.svg" alt="StayUp Logo" width="250" class="d-inline-block align-text-top me-2">
             </span>
-            <div>
-                <span class="text-white me-3">Welcome, <span id="username"></span></span>
-                <a href="/dashboard" class="btn btn-sm btn-outline-success">Home</a>
-                <a href="/logout" class="btn btn-sm btn-outline-danger">Logout</a>
+            <div class="d-flex align-items-center nav-content">
+                <span id="username" class="fw-bold m-2">Loading...</span><i class="fa-solid fa-user me-4"></i>
+                </span>
+                <a href="/dashboard">
+                    <i class="fa-solid fa-newspaper m-2"></i>
+                </a>
+                <a href="/logout" class="logout">
+                   <i class="fa-solid fa-right-from-bracket"></i> 
+                </a>
             </div>
         </div>
     </nav>

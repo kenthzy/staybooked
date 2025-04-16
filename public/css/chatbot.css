@@ -4,7 +4,19 @@
     --terchiary-green: #A8BBA0;
     --light-green: #f7f4ef;
 }
-
+.nav-content{
+    color: #747C64;
+}
+a{
+    color: #747C64;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: large;
+    transition: color 0.3s ease!important;  
+}
+a:hover{
+    color: #2f3a1e!important;  
+}
 .chat-container {
     background: var(--light-green)!important;
     border-radius: 8px;
