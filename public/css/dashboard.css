@@ -97,7 +97,7 @@ a{
     text-decoration: none;
     font-weight: bold;
     font-size: large;
-    transition: color 0.3s ease!important;  
+    transition: color 0.3s ease!important; ; 
 }
 a:hover{
     color: #2f3a1e!important;  
