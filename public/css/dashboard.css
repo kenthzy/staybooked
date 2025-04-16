@@ -89,3 +89,19 @@ body {
     color: #ffffff;
     border-color: #2f3a1e;
 }
+.chat-float {
+    position: fixed;
+    bottom: 20px;
+    right: 120px;
+    z-index: 999;
+    background-color: #A8BBA0;
+    border-radius: 50%;
+    padding: 10px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.chat-float:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 15px 5px #A8BBA0;
+    background-color: #a8bba0b2;
+}

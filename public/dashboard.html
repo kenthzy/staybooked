@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/bootstrap-5.3.3-dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="icon" href="assets/icon.svg" type="image/x-icon">
 </head>
 <body>
@@ -15,9 +16,12 @@
                 <img src="assets/logo.svg" alt="StayUp Logo" width="250" class="d-inline-block align-text-top me-2">
             </span>
             <div>
-                <span class="text-white me-3">Welcome, <span id="username"></span></span>
-                <a href="/chat" class="btn btn-sm btn-outline-success">StayBooked Chatbot</a>
-                <a href="/logout" class="btn btn-sm btn-outline-danger">Logout</a>
+                <span class="me-3" style="color: #3e4b2b;"></span>
+                <span id="username" class="fw-bold m-2">Sample Name</span><i class="fa-solid fa-user me-1 fa-xl"></i>
+                </span>
+                <a href="/logout" class="btn btn-sm btn-outline-danger">
+                    Logout <i class="fa-solid fa-right-from-bracket me-1"></i> 
+                </a>
             </div>
         </div>
     </nav>
@@ -32,6 +36,11 @@
           </div>
         </div>
       </header>
+
+          <!-- Floating Chat -->
+      <a href="/chat" class="chat-float" title="Chat with us">
+        <img src="assets/icon.svg" alt="Chat Icon" width="40">
+     </a>
 
     <div class="container py-5 p-5">
         <h2 class="text-start mb-4 text-light">StayUpdated On Latest News</h2>
