@@ -218,7 +218,6 @@ app.get('/business-news', async (req, res) => {
 // Chat Routes
 app.get('/chat', (req, res) => res.sendFile(path.join(__dirname, 'public', 'chatbot.html')));
 
-// Conversation flow configuration
 const onboardingQuestions = [
     {
         id: 1,
@@ -256,23 +255,26 @@ app.post('/chat', async (req, res) => {
     try {
         const { answers, lastMessage } = req.body;
         
-        const prompt = `Act as an Airbnb expert assistant. Format responses using markdown with:
-        - **Bold** for key terms/prices
-        - Bullet points for lists
-        - ## Headers for sections
-        - *Italic* for special notes
-        
-        The user provided these answers:
-        ${JSON.stringify(answers)}
-        
-        Current conversation: ${lastMessage}
-        
-        Provide advice focusing on:
-        - Market-specific pricing
-        - Audience engagement
-        - Platform optimization
-        - Local regulations
-        - Feature recommendations`;
+        const prompt = `Act as an Airbnb expert assistant. The user provided these specific answers:
+            ${Object.entries(answers).map(([key, value]) => {
+            const question = onboardingQuestions.find(q => q.key === key)?.question || key;
+            return `- **${question}**: ${value}`
+            }).join('\n')}
+
+            Current conversation context: ${lastMessage}
+
+            Generate SPECIFIC recommendations based on their selections including:
+            1. Pricing strategy for their budget and location
+            2. Marketing tactics for their target audience
+            3. Platform optimization for their chosen platform(s)
+            4. Must-have features based on their selections
+            5. Local compliance considerations
+
+            Format with markdown using:
+            **Bold** for key terms
+            - Bullet points
+            ## Section headers
+            *Italic* for important notes`;
 
         const completion = await openai.chat.completions.create({
             model: "google/gemini-pro",

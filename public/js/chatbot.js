@@ -3,27 +3,27 @@ let conversationState = {
     answers: {},
     questions: [
         {
-            text: "💰 **What's your budget for this project?**",
+            text: "💰 What's your budget for this project?",
             key: "budget",
             options: ["Under $1k", "$1k-$5k", "$5k-$10k", "$10k+"]
         },
         {
-            text: "🧑‍🤝‍🧑 **Who is your target audience?**",
+            text: "🧑‍🤝‍🧑 Who is your target audience?",
             key: "audience",
             options: ["Families", "Couples", "Business Travelers", "Backpackers"]
         },
         {
-            text: "🖥️ **Which platform are you using?**",
+            text: "🖥️ Which platform are you using?",
             key: "platform",
             options: ["Airbnb Only", "Airbnb + VRBO", "Multiple Platforms", "Custom Website"]
         },
         {
-            text: "📍 **Where is your target market?**",
+            text: "📍 Where is your target market?",
             key: "location",
             options: ["Urban City", "Suburban", "Rural", "Vacation Destination"]
         },
         {
-            text: "🛠️ **Desired extra features?**",
+            text: "🛠️ Desired extra features?",
             key: "features",
             options: ["Smart Home Tech", "Premium Photography", "Concierge", "Experience Packages"]
         }
@@ -45,6 +45,9 @@ async function sendMessage() {
             addMessage('bot', currentQ.text, currentQ.options);
             conversationState.currentQuestion++;
         } else {
+            // Show generating message
+            const generatingMsg = addMessage('bot', '✨ Staybooked is now generating your strategy...');
+            
             const response = await fetch('/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -54,6 +57,7 @@ async function sendMessage() {
                 })
             });
             
+            generatingMsg.remove();
             const aiResponse = await response.json();
             addMessage('bot', aiResponse.formatted || aiResponse.text);
             
@@ -95,13 +99,15 @@ function addMessage(type, content, options = []) {
                 </div>
                 <div class="message-content md-content">${content}</div>
                 ${options.length ? `
-                <div class="options-container">
-                    ${options.map(opt => `
-                        <button class="option-btn btn-sm btn" onclick="handleOption('${opt}')">
-                            ${opt}
-                        </button>
-                    `).join('')}
-                </div>` : ''}
+                    <div class="options-container">
+                        ${options.map(opt => `
+                            <button class="option-btn btn-sm btn" 
+                                    onclick="selectOption('${opt}')"
+                                    data-value="${opt}">
+                                ${opt}
+                            </button>
+                        `).join('')}
+                    </div>` : ''}
             `;
             break;
             
@@ -127,27 +133,46 @@ function addMessage(type, content, options = []) {
     
     messageDiv.innerHTML = contentHTML;
     chatBox.appendChild(messageDiv);
+    return messageDiv;
 }
 
 function handleOption(option) {
+    const chatBox = document.getElementById('chatBox');
+    
     if(option === "Start Over") {
         conversationState = {
             currentQuestion: 0,
             answers: {},
             questions: conversationState.questions
         };
-        document.getElementById('chatBox').innerHTML = '';
+        chatBox.innerHTML = '';
         sendMessage();
-    } else {
-        document.getElementById('userInput').value = option;
-        sendMessage();
+    } else if(option === "Save Strategy") {
+        const lastMessage = chatBox.lastElementChild;
+        const content = lastMessage.querySelector('.md-content').innerText;
+        const blob = new Blob([content], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Staybooked-Strategy-${Date.now()}.txt`;
+        a.click();
+    } else if(option === "Ask Another Question") {
+        conversationState.currentQuestion = conversationState.questions.length;
+        addMessage('bot', "What additional question would you like to ask?");
     }
 }
 
 function selectOption(value) {
-    const currentKey = conversationState.questions[conversationState.currentQuestion - 1]?.key;
-    if (currentKey) conversationState.answers[currentKey] = value;
-    handleOption(value);
+    const currentQuestionIndex = conversationState.currentQuestion - 1;
+    const currentKey = conversationState.questions[currentQuestionIndex]?.key;
+    
+    if (currentKey) {
+        conversationState.answers[currentKey] = value;
+        // Clear options after selection
+        document.getElementById('optionsContainer').innerHTML = '';
+        // Automatically advance to next question
+        sendMessage();
+    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
