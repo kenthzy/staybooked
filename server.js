@@ -223,7 +223,7 @@ const onboardingQuestions = [
         id: 1,
         question: "💰 What's your budget for this project?",
         key: 'budget',
-        options: ['Under Php1k', 'Php1k-Php5k', 'Php5k-Php10k', 'Php10k+']
+        options: ["Under PHP 50k", "PHP 50k - PHP 250k", "PHP 250k - PHP 500k", "PHP 500k+"]
     },
     {
         id: 2,

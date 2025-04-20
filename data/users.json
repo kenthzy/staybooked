@@ -4,5 +4,8 @@
   },
   "admin": {
     "password": "$2b$10$hoCGEIDQnWsZ8LnI9iK6wuD4cbJ7fOM8PyV0LREHM/Jgm1X/wwcl6"
+  },
+  "ldyphmla": {
+    "password": "$2b$10$ElthGxq32/K0TQ8A/0mXv.lZkLEZ1THOXripvONrgZxGu1NvNSL3q"
   }
 }

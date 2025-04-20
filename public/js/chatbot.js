@@ -5,7 +5,7 @@ let conversationState = {
         {
             text: "💰 What's your budget for this project?",
             key: "budget",
-            options: ["Under $1k", "$1k-$5k", "$5k-$10k", "$10k+"]
+            options: ["Under PHP 50k", "PHP 50k - PHP 250k", "PHP 250k - PHP 500k", "PHP 500k+"]
         },
         {
             text: "🧑‍🤝‍🧑 Who is your target audience?",
