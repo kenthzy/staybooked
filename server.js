@@ -255,7 +255,7 @@ app.post('/chat', async (req, res) => {
     try {
         const { answers, lastMessage } = req.body;
         
-        const prompt = `Act as an Airbnb expert assistant. The user provided these specific answers:
+        const prompt = `Act as an Hotel Businessman & Airbnb expert assistant. The user provided these specific answers:
             ${Object.entries(answers).map(([key, value]) => {
             const question = onboardingQuestions.find(q => q.key === key)?.question || key;
             return `- **${question}**: ${value}`

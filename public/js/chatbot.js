@@ -61,11 +61,10 @@ async function sendMessage() {
             const aiResponse = await response.json();
             addMessage('bot', aiResponse.formatted || aiResponse.text);
             
-            // Add follow-up options
             addMessage('bot', "**What would you like to do next?**", [
-                "Ask Another Question",
-                "Start Over",
-                "Save Strategy"
+                { text: "Ask Another Question", action: "handleOption" },
+                { text: "Start Over", action: "handleOption" },
+                { text: "Save Strategy", action: "handleOption" }
             ]);
             
             // Reset conversation state
@@ -100,11 +99,11 @@ function addMessage(type, content, options = []) {
                 <div class="message-content md-content">${content}</div>
                 ${options.length ? `
                     <div class="options-container">
-                        ${options.map(opt => `
+                       ${options.map(opt => `
                             <button class="option-btn btn-sm btn" 
-                                    onclick="selectOption('${opt}')"
-                                    data-value="${opt}">
-                                ${opt}
+                                    onclick="${typeof opt === 'object' ? opt.action : 'selectOption'}('${typeof opt === 'object' ? opt.text : opt}')"
+                                    data-value="${typeof opt === 'object' ? opt.text : opt}">
+                                ${typeof opt === 'object' ? opt.text : opt}
                             </button>
                         `).join('')}
                     </div>` : ''}
@@ -148,33 +147,55 @@ function handleOption(option) {
         chatBox.innerHTML = '';
         sendMessage();
     } else if(option === "Save Strategy") {
-        const lastMessage = chatBox.lastElementChild;
-        const content = lastMessage.querySelector('.md-content').innerText;
-        const blob = new Blob([content], { type: 'text/plain' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `Staybooked-Strategy-${Date.now()}.txt`;
-        a.click();
+        // Get the strategy content
+        const messages = chatBox.children;
+        const strategyMessage = messages[messages.length - 2];
+        const content = strategyMessage.querySelector('.md-content').innerText;
+
+        // Create PDF
+        const doc = new jspdf.jsPDF();
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "normal");
+        
+        // Add title
+        doc.setFontSize(16);
+        doc.text("Staybooked Strategy", 10, 20);
+        doc.setLineWidth(0.5);
+        doc.line(10, 25, 200, 25);
+        
+        // Add content
+        doc.setFontSize(12);
+        const splitText = doc.splitTextToSize(content, 180);
+        doc.text(splitText, 10, 35);
+        
+        // Save PDF
+        doc.save(`Staybooked-Strategy-${new Date().toLocaleDateString()}.pdf`);
     } else if(option === "Ask Another Question") {
-        conversationState.currentQuestion = conversationState.questions.length;
-        addMessage('bot', "What additional question would you like to ask?");
+        // Add visual feedback and clear input
+        addMessage('bot', "Sure! What additional question would you like to ask?");
+        document.getElementById('userInput').focus();
     }
 }
 
 function selectOption(value) {
+    const postActions = ["Ask Another Question", "Start Over", "Save Strategy"];
+    
+    // Handle post-survey actions
+    if (postActions.includes(value)) {
+        handleOption(value);
+        return;
+    }
+
+    // Original survey answer handling
     const currentQuestionIndex = conversationState.currentQuestion - 1;
     const currentKey = conversationState.questions[currentQuestionIndex]?.key;
     
     if (currentKey) {
+        addMessage('user', value);
         conversationState.answers[currentKey] = value;
-        // Clear options after selection
-        document.getElementById('optionsContainer').innerHTML = '';
-        // Automatically advance to next question
         sendMessage();
     }
 }
-
 document.addEventListener('DOMContentLoaded', () => {
     fetch('/api/user')
         .then(res => res.json())
