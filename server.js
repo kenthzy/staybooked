@@ -13,12 +13,9 @@ require('dotenv').config();
 
 // Initialize app and constants
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 const USERS_FILE = path.join(__dirname, 'data', 'users.json');
 const rssParser = new Parser();
-
-// Configuration objects
-
 const { marked } = require('marked');
 
 // Configure marked
@@ -28,13 +25,13 @@ marked.setOptions({
   mangle: false
 });
 
+// Configuration objects
 const axiosConfig = {
     timeout: 5000,
     headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
     }
 };
-
 
 const openai = new OpenAI({
     baseURL: "https://openrouter.ai/api/v1",
@@ -49,10 +46,13 @@ const openai = new OpenAI({
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(session({
-    secret: process.env.SESSION_SECRET,
+    secret: process.env.SESSION_SECRET || 'your-secret-key',
     resave: false,
     saveUninitialized: true,
-    cookie: { secure: false }
+    cookie: { 
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    }
 }));
 app.use(express.static('public'));
 app.use('/bootstrap', express.static(
@@ -73,6 +73,7 @@ const makeAbsoluteUrl = (imgPath, baseUrl) => {
 };
 
 const isValidImage = (url) => {
+    if (!url) return false;
     const imageRegex = /\.(jpg|jpeg|png|webp|gif)(?:[?#]|$)/i;
     const platformRegex = /ytimg\.com|vimeocdn\.com/i;
     return (imageRegex.test(url) && !/logo|icon|avatar/i.test(url)) || platformRegex.test(url);
@@ -146,21 +147,29 @@ app.get('/dashboard', (req, res) => {
 
 app.post('/signup', async (req, res) => {
     const { username, password } = req.body;
+    if (!username || !password) {
+        return res.status(400).send('Username and password are required');
+    }
+
     try {
         const users = await getUsers();
-        if (users[username]) return res.send('Username already exists');
+        if (users[username]) return res.status(400).send('Username already exists');
         
-        users[username] = { password: await bcrypt.hash(password, 10) };
+        const hashedPassword = await bcrypt.hash(password, 10);
+        users[username] = { password: hashedPassword };
         await saveUsers(users);
         res.redirect('/login');
     } catch (error) {
+        console.error('Signup error:', error);
         res.status(500).send('Error registering user');
     }
 });
 
-
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
+    if (!username || !password) {
+        return res.status(400).send('Username and password are required');
+    }
 
     try {
         const users = await getUsers();
@@ -177,7 +186,6 @@ app.post('/login', async (req, res) => {
         }
 
         req.session.user = username;
-
         res.redirect('/dashboard');
     } catch (error) {
         console.error('Login error:', error);
@@ -185,10 +193,14 @@ app.post('/login', async (req, res) => {
     }
 });
 
-
 app.get('/logout', (req, res) => {
-    req.session.destroy();
-    res.redirect('/login');
+    req.session.destroy(err => {
+        if (err) {
+            console.error('Logout error:', err);
+            return res.status(500).send('Error logging out');
+        }
+        res.redirect('/login');
+    });
 });
 
 // News Route
@@ -196,27 +208,32 @@ app.get('/business-news', async (req, res) => {
     if (!req.session.user) return res.status(401).json({ error: 'Unauthorized' });
 
     try {
-        const airbnbFeed = await rssParser.parseURL('https://news.airbnb.com/feed/');
-        const pressReleases = await Promise.all(
-            airbnbFeed.items.map(async item => ({
-                title: item.title,
-                url: item.link,
-                image: await findContentImage(item.link),
-                source: 'Airbnb Newsroom',
-                description: item.contentSnippet,
-                publishedAt: new Date(item.isoDate).toLocaleDateString()
-            }))
-        );
+        const [airbnbFeed, cbsArticles] = await Promise.all([
+            rssParser.parseURL('https://news.airbnb.com/feed/').then(feed => 
+                Promise.all(feed.items.map(async item => ({
+                    title: item.title,
+                    url: item.link,
+                    image: await findContentImage(item.link),
+                    source: 'Airbnb Newsroom',
+                    description: item.contentSnippet,
+                    publishedAt: new Date(item.isoDate).toLocaleDateString()
+                })))
+            ),
+            scrapeCBSNews()
+        ]);
 
-        const cbsArticles = await scrapeCBSNews();
-        res.json([...pressReleases, ...cbsArticles]);
+        res.json([...airbnbFeed, ...cbsArticles]);
     } catch (error) {
+        console.error('News fetch error:', error);
         res.status(500).json({ error: 'Failed to fetch business news' });
     }
 });
 
 // Chat Routes
-app.get('/chat', (req, res) => res.sendFile(path.join(__dirname, 'public', 'chatbot.html')));
+app.get('/chat', (req, res) => {
+    if (!req.session.user) return res.redirect('/login');
+    res.sendFile(path.join(__dirname, 'public', 'chatbot.html'));
+});
 
 const onboardingQuestions = [
     {
@@ -252,6 +269,8 @@ const onboardingQuestions = [
 ];
 
 app.post('/chat', async (req, res) => {
+    if (!req.session.user) return res.status(401).json({ error: 'Unauthorized' });
+
     try {
         const { answers, lastMessage } = req.body;
         
@@ -281,10 +300,11 @@ app.post('/chat', async (req, res) => {
             messages: [{ 
                 role: "user", 
                 content: prompt 
-            }]
+            }],
+            temperature: 0.7
         });
 
-        const rawContent = completion.choices[0].message.content;
+        const rawContent = completion.choices[0]?.message?.content || "I couldn't generate a response. Please try again.";
         
         res.json({
             text: rawContent, 
@@ -306,28 +326,43 @@ app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.ht
 // Helper Functions
 async function getUsers() {
     try {
-        return JSON.parse(await fs.readFile(USERS_FILE, 'utf8'));
+        const data = await fs.readFile(USERS_FILE, 'utf8');
+        return JSON.parse(data);
     } catch (error) {
+        if (error.code === 'ENOENT') {
+            await fs.writeFile(USERS_FILE, '{}');
+            return {};
+        }
+        console.error('Error reading users file:', error);
         return {};
     }
 }
 
 async function saveUsers(users) {
-    await fs.writeFile(USERS_FILE, JSON.stringify(users, null, 2));
+    try {
+        await fs.writeFile(USERS_FILE, JSON.stringify(users, null, 2));
+    } catch (error) {
+        console.error('Error saving users file:', error);
+        throw error;
+    }
 }
 
 app.get('/api/user', async (req, res) => {
-    const username = req.session.user;
-
-    if (!username) {
+    if (!req.session.user) {
         return res.status(401).json({ error: 'Not logged in' });
     }
-
-    res.json({ username });
+    res.json({ username: req.session.user });
 });
 
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error('Unhandled error:', err);
+    res.status(500).send('Something went wrong!');
+});
 
 // Server Initialization
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
+    // Ensure data directory exists
+    fs.mkdir(path.join(__dirname, 'data'), { recursive: true }).catch(console.error);
 });
