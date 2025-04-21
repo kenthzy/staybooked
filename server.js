@@ -268,6 +268,42 @@ const onboardingQuestions = [
     }
 ];
 
+app.post('/chat/followup', async (req, res) => {
+    if (!req.session.user) return res.status(401).json({ error: 'Unauthorized' });
+
+    try {
+        const { question, context } = req.body;
+
+        const prompt = `The user asked a follow-up question: "${question}". Here is the context from our previous conversation:
+        ${Object.entries(context).map(([key, value]) => {
+            const onboardingQuestion = onboardingQuestions.find(q => q.key === key)?.question || key;
+            return `- **${onboardingQuestion}**: ${value}`;
+        }).join('\n')}
+
+        Please provide a helpful and informative answer to the user's question, formatted with markdown using **bold** for key terms, - bullet points, ## section headers, and *italics* for important notes.`;
+
+        const completion = await openai.chat.completions.create({
+            model: "google/gemini-pro",
+            messages: [{ role: "user", content: prompt }],
+            temperature: 0.7
+        });
+
+        const rawContent = completion.choices[0]?.message?.content || "I couldn't generate a response to your follow-up question. Please try again.";
+
+        res.json({
+            text: rawContent,
+            formatted: marked.parse(rawContent)
+        });
+
+    } catch (error) {
+        console.error('Follow-up Chat Error:', error);
+        res.status(500).json({
+            text: "Sorry, I'm having trouble answering that question. Could you try rephrasing?",
+            formatted: marked.parse("**Oops!** Please try your question again or rephrase it.")
+        });
+    }
+});
+
 app.post('/chat', async (req, res) => {
     if (!req.session.user) return res.status(401).json({ error: 'Unauthorized' });
 

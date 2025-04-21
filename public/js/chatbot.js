@@ -143,7 +143,7 @@ const conversationState = {
   }
   
   function showFollowUpOptions() {
-    addMessage('bot', "**What would you like to do next?**", [
+    addMessage('bot', "What would you like to do next?", [
       { text: "Ask Another Question", action: "handleOption" },
       { text: "Start Over", action: "handleOption" },
       { text: "Save Strategy", action: "handleOption" }
