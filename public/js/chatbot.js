@@ -30,6 +30,12 @@ let conversationState = {
     ]
 };
 
+conversationState = { 
+    currentQuestion: 0, 
+    answers: {},
+    questions: conversationState.questions 
+};
+
 async function sendMessage() {
     const userInput = document.getElementById('userInput');
     const chatBox = document.getElementById('chatBox');
@@ -41,38 +47,60 @@ async function sendMessage() {
 
     try {
         if (conversationState.currentQuestion < conversationState.questions.length) {
+            // Handle questionnaire flow
             const currentQ = conversationState.questions[conversationState.currentQuestion];
             addMessage('bot', currentQ.text, currentQ.options);
             conversationState.currentQuestion++;
         } else {
-            // Show generating message
-            const generatingMsg = addMessage('bot', '✨ Staybooked is now generating your strategy...');
-            
-            const response = await fetch('/chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    answers: conversationState.answers,
-                    lastMessage: message
-                })
-            });
-            
-            generatingMsg.remove();
-            const aiResponse = await response.json();
-            addMessage('bot', aiResponse.formatted || aiResponse.text);
-            
-            addMessage('bot', "**What would you like to do next?**", [
-                { text: "Ask Another Question", action: "handleOption" },
-                { text: "Start Over", action: "handleOption" },
-                { text: "Save Strategy", action: "handleOption" }
-            ]);
-            
-            // Reset conversation state
-            conversationState = { 
-                currentQuestion: 0, 
-                answers: {},
-                questions: conversationState.questions 
-            };
+            // Handle strategy generation or free-form questions
+            if (!conversationState.strategyGenerated) {
+                // First time reaching end - generate strategy
+                const generatingMsg = addMessage('bot', '✨ Staybooked is now generating your strategy...');
+                
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        answers: conversationState.answers,
+                        lastMessage: message
+                    })
+                });
+                
+                generatingMsg.remove();
+                const aiResponse = await response.json();
+                addMessage('bot', aiResponse.formatted || aiResponse.text);
+                
+                // Add follow-up options
+                addMessage('bot', "**What would you like to do next?**", [
+                    { text: "Ask Another Question", action: "handleOption" },
+                    { text: "Start Over", action: "handleOption" },
+                    { text: "Save Strategy", action: "handleOption" }
+                ]);
+                
+                // Mark strategy as generated
+                conversationState.strategyGenerated = true;
+                
+            } else {
+                // Handle additional questions
+                const generatingMsg = addMessage('bot', '✨ Researching your question...');
+                
+                const response = await fetch('/chat/freeform', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question: message })
+                });
+                
+                generatingMsg.remove();
+                const aiResponse = await response.json();
+                addMessage('bot', aiResponse.formatted || aiResponse.text);
+                
+                // Show follow-up options again
+                addMessage('bot', "**What would you like to do next?**", [
+                    { text: "Ask Another Question", action: "handleOption" },
+                    { text: "Start Over", action: "handleOption" },
+                    { text: "Save Strategy", action: "handleOption" }
+                ]);
+            }
         }
         
         userInput.value = '';
@@ -142,7 +170,8 @@ function handleOption(option) {
         conversationState = {
             currentQuestion: 0,
             answers: {},
-            questions: conversationState.questions
+            questions: conversationState.questions,
+            strategyGenerated: false // Reset this flag
         };
         chatBox.innerHTML = '';
         sendMessage();
@@ -171,9 +200,35 @@ function handleOption(option) {
         // Save PDF
         doc.save(`Staybooked-Strategy-${new Date().toLocaleDateString()}.pdf`);
     } else if(option === "Ask Another Question") {
-        // Add visual feedback and clear input
+        conversationState.currentQuestion = Infinity;
         addMessage('bot', "Sure! What additional question would you like to ask?");
         document.getElementById('userInput').focus();
+    }
+}
+
+async function handleFreeFormQuestion(message) {
+    try {
+        const generatingMsg = addMessage('bot', '✨ Researching your question...');
+        
+        const response = await fetch('/chat/freeform', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ question: message })
+        });
+        
+        generatingMsg.remove();
+        const aiResponse = await response.json();
+        addMessage('bot', aiResponse.formatted || aiResponse.text);
+        
+        // Show follow-up options again
+        addMessage('bot', "**What would you like to do next?**", [
+            "Ask Another Question",
+            "Start Over",
+            "Save Strategy"
+        ]);
+        
+    } catch (error) {
+        addMessage('error', `⚠️ Error: ${error.message}`);
     }
 }
 
