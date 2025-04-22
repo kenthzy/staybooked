@@ -39,8 +39,8 @@ The application also includes user authentication (signup and login), a dashboar
 
 1. **Clone the repository:**
    ```bash
-   git clone <repository_url>
-   cd <repository_name>
+   git clone (https://github.com/kenthzy/staybooked)
+   cd staybooked
 2. **Install Node.js dependencies:**
    ```bash
    npm install
