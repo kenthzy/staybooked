@@ -37,7 +37,8 @@ const openai = new OpenAI({
     baseURL: "https://openrouter.ai/api/v1",
     apiKey: process.env.OPENROUTER_API_KEY,
     defaultHeaders: {
-        "HTTP-Referer": "http://localhost:3000",
+        "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        "HTTP-Referer": "http://localhost:3000", 
         "X-Title": "AI Chatbot"
     }
 });
@@ -332,7 +333,7 @@ app.post('/chat', async (req, res) => {
             *Italic* for important notes`;
 
         const completion = await openai.chat.completions.create({
-            model: "google/gemini-pro",
+            model: "google/gemini-2.0-flash-exp:free",
             messages: [{ 
                 role: "user", 
                 content: prompt 
