@@ -37,7 +37,6 @@ const openai = new OpenAI({
     baseURL: "https://openrouter.ai/api/v1",
     apiKey: process.env.OPENROUTER_API_KEY,
     defaultHeaders: {
-        "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
         "HTTP-Referer": "http://localhost:3000", 
         "X-Title": "AI Chatbot"
     }
@@ -284,7 +283,7 @@ app.post('/chat/followup', async (req, res) => {
         Please provide a helpful and informative answer to the user's question, formatted with markdown using **bold** for key terms, - bullet points, ## section headers, and *italics* for important notes.`;
 
         const completion = await openai.chat.completions.create({
-            model: "google/gemini-pro",
+            model: "google/gemini-2.0-flash-exp:free",
             messages: [{ role: "user", content: prompt }],
             temperature: 0.7
         });
